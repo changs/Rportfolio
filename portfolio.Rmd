@@ -1,0 +1,68 @@
+---
+title: "My portfolio"
+output:
+  html_document:
+    code_folding: hide
+---
+
+```{r backend, message=FALSE, warning=FALSE}
+require(ggplot2)
+require(ggthemes)
+require('dplyr')
+require(reshape2)
+library(knitr)
+theme_set(theme_gray())
+
+data = read.csv("/Users/chg/Documents/budget.csv")
+data$Date <- as.Date(data$Date, "%d.%m.%Y")
+
+data$Cash.Euro.ZL <- sapply(data$Cash.Euro, function(x) last(data$EURPLN)*x) # mutate(data, nowy = Cash.Euro * 4.14)
+data$Cash.USD.ZL <- sapply(data$Cash.USD, function(x) last(data$USDPLN)*x)
+data$Cash.DK.ZL <- sapply(data$Cash.DK, function(x) 0.57764*x)
+data$Sum <- rowSums(data[c("Cash", "Cash.Company", "Deposit", "Mutual.Funds", "Stock.Market", "Cash.USD.ZL", "Cash.Euro.ZL", "Cash.DK.ZL")])
+data$SumInvested <- rowSums(data[c("Cash", "Cash.Company", "Deposit", "Mutual.Funds.Invested", "Stock.Market.Invested", "Cash.USD.ZL", "Cash.Euro.ZL", "Cash.DK.ZL")])
+d <- subset(data, select=c("Date",  "Cash","Cash.Company", "Deposit", "Mutual.Funds","Stock.Market", "SumInvested", "Cash.Euro.ZL", "Cash.USD.ZL", "Stock.Market.Invested", "Mutual.Funds.Invested", "Cash.DK.ZL", "Sum"))
+mdata <- melt(d, id='Date')
+
+drawPlot <- function(mdata) {
+  ggplot(data=mdata, aes(x=Date, y=value, colour=variable)) + geom_line() +
+    labs(x="Date", y="zl", title="Net worth") +
+    theme(legend.title=element_blank()) +
+    guides(colour = guide_legend(override.aes = list(size=4))) +
+    #stat_smooth(data = melt(subset(data, select=c("Sum", "Date")), id="Date"), method = 'lm', aes(colour = 'Trend'), se = FALSE) +
+    scale_y_continuous(expand = c(0, 0))
+}
+
+consecutiveDiff <- function(s) {
+  w <- vector()
+  for (i in 1:length(s)-1) {
+    w[i] <- s[i+1] - s[i]
+  }
+  return(w)
+}
+w <- consecutiveDiff(tail(data$Sum, n=13))
+```
+
+Asset allocation overview.
+
+```{r fig.width=13, fig.height=10}
+drawPlot(mdata)
+```
+
+Last '12 months' monthly diff:
+```{r}
+kable(t(w), col.names=tail(format(data$Date,"%B"), n=12), digits=2)
+```
+
+**The mean diff for last 12 months**
+```{r}
+print(mean(w))
+```
+
+**Last 6 month totals:**
+```{r}
+kable(t(tail(data$Sum, n=13)), col.names=tail(format(data$Date,"%B"), n=13), digits=2)
+```
+
+```
+
