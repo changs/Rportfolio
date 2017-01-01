@@ -16,8 +16,8 @@ theme_set(theme_gray())
 data = read.csv("/Users/chg/Documents/budget.csv")
 data$Date <- as.Date(data$Date, "%d.%m.%Y")
 
-data$Cash.Euro.ZL <- sapply(data$Cash.Euro, function(x) last(data$EURPLN)*x) # mutate(data, nowy = Cash.Euro * 4.14)
-data$Cash.USD.ZL <- sapply(data$Cash.USD, function(x) last(data$USDPLN)*x)
+data$Cash.Euro.ZL <- data$Cash.Euro * data$EURPLN
+data$Cash.USD.ZL <- data$Cash.USD * data$USDPLN
 data$Cash.DK.ZL <- sapply(data$Cash.DK, function(x) 0.57764*x)
 data$Sum <- rowSums(data[c("Cash", "Cash.Company", "Deposit", "Mutual.Funds", "Stock.Market", "Cash.USD.ZL", "Cash.Euro.ZL", "Cash.DK.ZL")])
 data$SumInvested <- rowSums(data[c("Cash", "Cash.Company", "Deposit", "Mutual.Funds.Invested", "Stock.Market.Invested", "Cash.USD.ZL", "Cash.Euro.ZL", "Cash.DK.ZL")])
