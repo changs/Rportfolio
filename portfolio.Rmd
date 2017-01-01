@@ -61,7 +61,7 @@ print(mean(w))
 
 **Last 6 month totals:**
 ```{r}
-kable(t(tail(data$Sum, n=13)), col.names=tail(format(data$Date,"%B"), n=13), digits=2)
+kable(t(tail(data$Sum, n=6)), col.names=tail(format(data$Date,"%B"), n=6), digits=2)
 ```
 
 ```
