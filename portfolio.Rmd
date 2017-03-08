@@ -82,9 +82,9 @@ colu = c("Cash", "Currencies", "Stocks", "Funds")
 b <- data.frame(ratio=ratios, what=colu)
 bar <- ggplot(b, aes(x=1, y=b$ratio, fill=b$what)) + geom_bar(width = 1, stat = "identity", color='black') +
        coord_polar(theta='y') +
-       theme(axis.ticks=element_blank(),  # the axis ticks
-                   axis.title=element_blank(),  # the axis labels
-                   axis.text.y=element_blank()) + # the 0.75, 1.00, 1.25 labels.
+       theme(axis.ticks=element_blank(),
+                   axis.title=element_blank(),
+                   axis.text.y=element_blank()) +
        theme(axis.text.x=element_text(color='black'), legend.title=element_blank())
 bar
 ```
