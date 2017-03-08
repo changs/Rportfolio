@@ -3,6 +3,9 @@ title: "My portfolio"
 output:
   html_document:
     code_folding: hide
+    theme: spacelab
+  pdf_document: default
+  word_document: default
 ---
 
 ```{r backend, message=FALSE, warning=FALSE}
@@ -11,7 +14,8 @@ require(ggthemes)
 require('dplyr')
 require(reshape2)
 library(knitr)
-theme_set(theme_gray())
+require(scales)
+#theme_set(theme_gray())
 
 data = read.csv("/Users/chg/Documents/budget.csv")
 data$Date <- as.Date(data$Date, "%d.%m.%Y")
@@ -25,10 +29,11 @@ d <- subset(data, select=c("Date",  "Cash","Cash.Company", "Deposit", "Mutual.Fu
 mdata <- melt(d, id='Date')
 
 drawPlot <- function(mdata) {
+  options(scipen=10000)
   ggplot(data=mdata, aes(x=Date, y=value, colour=variable)) + geom_line() +
     labs(x="Date", y="zl", title="Net worth") +
     theme(legend.title=element_blank()) +
-    guides(colour = guide_legend(override.aes = list(size=4))) +
+    guides(colour = guide_legend(override.aes = list(size=8))) +
     #stat_smooth(data = melt(subset(data, select=c("Sum", "Date")), id="Date"), method = 'lm', aes(colour = 'Trend'), se = FALSE) +
     scale_y_continuous(expand = c(0, 0))
 }
@@ -64,5 +69,26 @@ print(mean(w))
 kable(t(tail(data$Sum, n=6)), col.names=tail(format(data$Date,"%B"), n=6), digits=2)
 ```
 
+**Portfolio allocation**
+```{r}
+last = function(x) { tail(x, n=1) }
+sum = last(data$Sum)
+foreignCashRatio = (last(data$Cash.USD.ZL) + last(data$Cash.Euro.ZL) + last(data$Cash.DK.ZL)) / sum
+stocksRatio = last(data$Stock.Market) / sum
+fundsRatio = last(data$Mutual.Funds) / sum
+cash = (last(data$Cash) + last(data$Cash.Company) + last(data$Deposit)) / sum
+ratios = c(cash, foreignCashRatio, stocksRatio, fundsRatio)
+colu = c("Cash", "Currencies", "Stocks", "Funds")
+b <- data.frame(ratio=ratios, what=colu)
+bar <- ggplot(b, aes(x=1, y=b$ratio, fill=b$what)) + geom_bar(width = 1, stat = "identity", color='black') +
+       coord_polar(theta='y') +
+       theme(axis.ticks=element_blank(),  # the axis ticks
+                   axis.title=element_blank(),  # the axis labels
+                   axis.text.y=element_blank()) + # the 0.75, 1.00, 1.25 labels.
+       theme(axis.text.x=element_text(color='black'), legend.title=element_blank())
+bar
+```
+```{r}
+kable(t(percent(ratios)), col.names = colu)
 ```
 
